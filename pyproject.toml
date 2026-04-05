@@ -1,0 +1,29 @@
+[project]
+name = "open-usd-regonn"
+version = "0.1.0"
+description = ""
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "usd-core>=26.3",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.9",
+    "ty>=0.0.28",
+]
+
+[tool.ruff]
+target-version = "py313"
+src = ["001"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "UP"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+# pxr は実行時拡張のため属性が静的に解決されない
+[tool.ty.rules]
+unresolved-attribute = "ignore"
