@@ -1,0 +1,41 @@
+from pxr import Gf, Usd, UsdGeom, UsdLux
+
+stage = Usd.Stage.CreateNew("street_lighting.usda")
+root = stage.GetRootLayer()
+root.subLayerPaths.append("./street_collections.usda")
+stage.SetDefaultPrim(stage.GetPrimAtPath("/Street"))
+UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.y)
+UsdGeom.SetStageMetersPerUnit(stage, 0.01)
+
+UsdGeom.Scope.Define(stage, "/Shot")
+camera = UsdGeom.Camera.Define(stage, "/Shot/StreetCam")
+camera.AddTranslateOp().Set(Gf.Vec3d(0, 1.5, 15))
+camera.CreateProjectionAttr(UsdGeom.Tokens.perspective)
+camera.CreateHorizontalApertureAttr(24)
+camera.CreateVerticalApertureAttr(13.5)
+camera.CreateFocalLengthAttr(36)
+camera.CreateClippingRangeAttr(Gf.Vec2f(0.1, 100))
+
+sun = UsdLux.DistantLight.Define(stage, "/Shot/Sun")
+sun.AddRotateXOp().Set(-25)
+sun.CreateAngleAttr(0.53)
+sun.CreateIntensityAttr(1500)
+sun.CreateColorAttr(Gf.Vec3f(1, 1, 1))
+
+lamp = UsdLux.SphereLight.Define(stage, "/Shot/WestLamp")
+lamp.AddTranslateOp().Set(Gf.Vec3d(-1.5, 1.8, 1.2))
+lamp.CreateRadiusAttr(0.2)
+lamp.CreateIntensityAttr(30000)
+lamp.CreateExposureAttr(1)
+lamp.CreateColorAttr(Gf.Vec3f(1, 0.45, 0.15))
+lamp.CreateVisibilityAttr(UsdGeom.Tokens.invisible)
+
+panel = UsdLux.RectLight.Define(stage, "/Shot/EastPanel")
+panel.AddTranslateOp().Set(Gf.Vec3d(1.5, 2, 2))
+panel.CreateWidthAttr(2)
+panel.CreateHeightAttr(1)
+panel.CreateIntensityAttr(6500)
+panel.CreateColorAttr(Gf.Vec3f(0.35, 0.65, 1))
+panel.CreateVisibilityAttr(UsdGeom.Tokens.invisible)
+
+root.Save()

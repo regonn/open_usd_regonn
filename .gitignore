@@ -10,3 +10,5 @@ wheels/
 .venv
 
 *.usda
+!021/streetInspection/schema.usda
+/work/

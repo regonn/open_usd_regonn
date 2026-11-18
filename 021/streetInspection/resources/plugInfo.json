@@ -1,0 +1,8 @@
+{
+    "Plugins": [{
+        "Name": "streetInspection",
+        "Type": "resource",
+        "Root": ".",
+        "ResourcePath": "."
+    }]
+}
