@@ -2,6 +2,16 @@
 
 本書の「その1」から「その22」までの Python 実習を章番号順に収録しています。家を作る実習から、通りを USDZ として配布し、受け手の環境で点検する実習まで進められます。
 
+## uv を用意する
+
+この実習には、Python のパッケージと仮想環境を管理するツール「uv」が必要です。Windows では PowerShell から次のコマンドでインストールできます。[uv 公式のインストール手順](https://docs.astral.sh/uv/getting-started/installation/)
+
+```powershell
+winget install --id=astral-sh.uv -e
+```
+
+新しい PowerShell を開き、`uv --version` でバージョンが表示されることを確認してください。
+
 ## 最初のステージを作る
 
 Windows の PowerShell で、クローンしたリポジトリのルートから始めます。uv は `.python-version` の Python 3.13 系と、`uv.lock` の `usd-core` 26.11 を使います。
