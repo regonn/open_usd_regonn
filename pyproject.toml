@@ -1,7 +1,7 @@
 [project]
 name = "open-usd-regonn"
 version = "0.1.0"
-description = ""
+description = "Zenn Book『OpenUSD実践入門 ― NVIDIA認定資格への最短ルート』の章別 Python サンプルコードです。"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [

@@ -193,3 +193,5 @@ Copy-Item streetInspection/resources/plugInfo.json,streetInspection/resources/ge
 Set-Location receiver-22
 Invoke-Sample 022/check_final.py
 ```
+
+本リポジトリのサンプルコードは [MIT License](LICENSE) で配布しています。
