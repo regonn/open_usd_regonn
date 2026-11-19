@@ -12,18 +12,10 @@ git clone https://github.com/NVIDIA-Omniverse/kit-app-template.git
 cd kit-app-template
 ```
 
-使う版を次のどちらかに決めます。
-
-- **書籍の手順を再現する場合**は、次のコマンドで Kit 110.0.0 のテンプレートを選びます。手順2で生成した設定をそのままビルドしてください。
+書籍と同じ Kit 110.0.0 のテンプレートに切り替えます。
 
 ```powershell
 git switch --detach cf21b4ca6682946e5ff0a1c8b0105386629bf7c1
-```
-
-- **このフォルダの実ファイルを使う場合**は、代わりに次のコミットを選びます。収録した設定の末尾には、ビルド時の Kit SDK 110.4.1 と拡張機能の版が記録されています。
-
-```powershell
-git switch --detach b8e9f2e4f2930d19e87e3702d4eeaf00d9846676
 ```
 
 ## 2. Kit Base Editor を作る
@@ -43,11 +35,9 @@ git switch --detach b8e9f2e4f2930d19e87e3702d4eeaf00d9846676
 | Enter version | `0.1.0` |
 | Do you want to add application layers? | `No` |
 
-これで `source/apps/regonn.usd_editor.kit` ができます。**手順1で 110.4.1 を選んだ場合のみ**、生成直後のファイルに実習済みの設定をコピーします。
+これで `source/apps/regonn.usd_editor.kit` ができます。手順3では、このファイルをそのまま使います。
 
-```powershell
-Copy-Item ..\open_usd_regonn\000\regonn.usd_editor.kit .\source\apps\regonn.usd_editor.kit
-```
+収録した [regonn.usd_editor.kit](regonn.usd_editor.kit) は、質問への回答が設定にどう反映されるかを確認するための記入例です。`BEGIN GENERATED PART` 以降は使用する SDK が依存関係を解決して書き出すため、手元で生成した内容と異なることがあります。
 
 ### 設定ファイルの読みどころ
 
@@ -75,4 +65,4 @@ Stage パネルには `/World/Cube` が現れます。Cube の一辺は 300、�
 
 ## ライセンス
 
-`regonn.usd_editor.kit` には NVIDIA のテンプレートを使っています。元の著作権表示とライセンス識別子はファイルの先頭にあります。[kit-app-template のライセンス](https://github.com/NVIDIA-Omniverse/kit-app-template/blob/b8e9f2e4f2930d19e87e3702d4eeaf00d9846676/LICENSE)
+`regonn.usd_editor.kit` には NVIDIA のテンプレートを使っています。元の著作権表示とライセンス識別子はファイルの先頭にあります。[kit-app-template のライセンス](https://github.com/NVIDIA-Omniverse/kit-app-template/blob/cf21b4ca6682946e5ff0a1c8b0105386629bf7c1/LICENSE)
