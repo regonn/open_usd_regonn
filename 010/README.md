@@ -4,9 +4,13 @@
 
 ## 必要な環境
 
-Windows の PowerShell と [共通環境](../README.md#共通環境)（uv、Python 3.13 系、`usd-core` 26.11）を使います。
+Windows の PowerShell で、コマンドと Python スクリプトの両方を conda 環境 `usd-cli` から実行します。conda が使える PowerShell で、初回だけ次のコマンドを実行してください。
 
-本文の `usdcat`（表示・変換）、`usdzip`（梱包・一覧）、`usdchecker` と `usdtree`（配布物の検査）を試す場合は、別の PowerShell で conda-forge の `openusd` 26.08 環境を有効にします。conda が使える端末で初回に `conda create -n usd-cli -c conda-forge python=3.13 openusd=26.08`、利用時に `conda activate usd-cli` を実行してください。
+```powershell
+conda create -n usd-cli -c conda-forge python=3.13 openusd=26.08
+```
+
+この環境で本文の `usdcat`、`usdzip`、`usdchecker`、`usdtree` と、Python の `pxr` を使えます。
 
 ## 事前準備
 
@@ -19,8 +23,8 @@ Windows の PowerShell と [共通環境](../README.md#共通環境)（uv、Pyth
 ```powershell
 $repo = (git rev-parse --show-toplevel)
 Set-Location $repo
-uv sync --locked
-$python = Join-Path $repo '.venv/Scripts/python.exe'
+conda activate usd-cli
+$python = Join-Path $env:CONDA_PREFIX 'python.exe'
 function Invoke-Sample($file) { & $python (Join-Path $repo $file) @args }
 Set-Location work
 ```
