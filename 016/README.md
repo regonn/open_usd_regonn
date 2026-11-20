@@ -1,6 +1,6 @@
-# 第16章 レンダリングと Hydra の基礎
+# 第16章 カメラとライト（UsdLux）
 
-同じカメラに下見用と確認用の描画設定を作ります。本文の Kit 実習では、その2つの解像度で画像を撮影します。
+同じ構図で照明を比較するため、通りにカメラと3種類のライトを置きます。
 
 ## 必要な環境
 
@@ -8,7 +8,7 @@ Windows の PowerShell と [共通環境](../README.md#共通環境)（uv、Pyth
 
 ## 事前準備
 
-[第15章の手順](../015/README.md)で `/Shot/StreetCam` とライトを持つ `street_lighting.usda` を生成します。`work/path-lab/receiver` の `street_collections.usda`、`street_models.usda`、`street-v2.usdz` も同じ場所に残してください。
+[第15章の手順](../015/README.md)で `street_collections.usda` を作り、`street_models.usda` と `street-v2.usdz` と一緒に `work/path-lab/receiver` に残します。
 
 ## 実行手順
 
@@ -23,16 +23,18 @@ function Invoke-Sample($file) { & $python (Join-Path $repo $file) @args }
 Set-Location work/path-lab/receiver
 ```
 
-撮影コードは Kit の Viewport とイベントループを使うため未収録です。PNG を作る場合は、Kit で生成した `street_render.usda` を開いて **Stage Lights** を選び、本文「Kit で設定を読み、2枚の PNG を描く」のコードを Script Editor で実行してください。
+見え方を比べるには、Kit で `street_lighting.usda` を開き、カメラに `/Shot/StreetCam`、照明に **Stage Lights** を選びます。本文「Kit で同じ構図の3枚を見比べる」に沿って `Sun`、`WestLamp`、`EastPanel` を1灯ずつ点けてください。
 
 ```powershell
-Invoke-Sample 016/build_render.py
+Invoke-Sample 016/build_lighting.py
+Invoke-Sample 016/inspect_lighting.py
 ```
 
 ## 期待される結果
 
-`street_render.usda` ができます。`/Render/Draft` は 160 × 90、`/Render/Review` は 960 × 540 で、どちらも `/Shot/StreetCam` を指します。本文の撮影まで行うと `street-draft.png` と `street-review.png` が USDA の隣にできます。
+`street_lighting.usda` ができます。読み戻すと水平画角は約 36.87 度で、家のパスと3灯の設定が表示されます。初期状態では `/Shot/Sun` が見え、残り2灯は非表示です。
 
 ## ファイル一覧
 
-- [build_render.py](build_render.py) — 2つの `UsdRender.Settings` に解像度とカメラを記録する。
+- [build_lighting.py](build_lighting.py) — 通りに `StreetCam`、日光、西の球形ライト、東の面光源を追加する。
+- [inspect_lighting.py](inspect_lighting.py) — 水平画角、撮影対象の家、各ライトの値を読み戻す。

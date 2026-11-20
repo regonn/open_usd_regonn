@@ -1,16 +1,14 @@
-# 第17章 診断ツールでステージを読む
+# 第17章 レンダリングと Hydra の基礎
 
-西の参照切れと東の意図しない屋根色を作り、合成エラーと属性の出典を手掛かりに順番に直します。
+同じカメラに下見用と確認用の描画設定を作ります。本文の Kit 実習では、その2つの解像度で画像を撮影します。
 
 ## 必要な環境
 
-Windows の PowerShell と [共通環境](../README.md#共通環境)（uv、Python 3.13 系、`usd-core` 26.11）を使います。
-
-本文の `usdchecker --skipVariants` と `usdcat` で修復前後の状態を調べる場合は、別の PowerShell で conda-forge の `openusd` 26.08 環境を有効にします。環境の作り方は[第10章の必要な環境](../010/README.md#必要な環境)を参照してください。
+Windows の PowerShell と [共通環境](../README.md#共通環境)（uv、Python 3.13 系、`usd-core` 26.11）を使います。 ステージの作成は共通環境で実行できます。Viewport の実習には RTX GPU と [序章で構築する Kit 110.4.1](../000/README.md) を使います。
 
 ## 事前準備
 
-[第16章の手順](../016/README.md)で `work/path-lab/receiver/street_render.usda` を作ります。`street_lighting.usda` 以下のサブレイヤーと `street-v2.usdz` が読み込める状態で使います。撮影画像は不要です。
+[第16章の手順](../016/README.md)で `/Shot/StreetCam` とライトを持つ `street_lighting.usda` を生成します。`work/path-lab/receiver` の `street_collections.usda`、`street_models.usda`、`street-v2.usdz` も同じ場所に残してください。
 
 ## 実行手順
 
@@ -25,24 +23,16 @@ function Invoke-Sample($file) { & $python (Join-Path $repo $file) @args }
 Set-Location work/path-lab/receiver
 ```
 
-本文の CLI 診断も行う場合は、各 `inspect_street.py` の直後に、同じファイルに対して `usdchecker --skipVariants` を実行してください。参照の修復直後には、東の屋根色の上書きがまだ残っています。
+撮影コードは Kit の Viewport とイベントループを使うため未収録です。PNG を作る場合は、Kit で生成した `street_render.usda` を開いて **Stage Lights** を選び、本文「Kit で設定を読み、2枚の PNG を描く」のコードを Script Editor で実行してください。
 
 ```powershell
-Invoke-Sample 017/inspect_street.py street_render.usda
-Invoke-Sample 017/make_faults.py
-Invoke-Sample 017/inspect_street.py street_check.usda
-Invoke-Sample 017/repair_street.py reference
-Invoke-Sample 017/inspect_street.py street_check.usda
-Invoke-Sample 017/repair_street.py tint
-Invoke-Sample 017/inspect_street.py street_check.usda
+Invoke-Sample 017/build_render.py
 ```
 
 ## 期待される結果
 
-`street_check.usda` ができます。故障時は西の家を Mesh として取得できず、東の色は緑になります。両方を修復すると `composition errors: 0`、西は Mesh、東の色は第12章の紫に戻ります。
+`street_render.usda` ができます。`/Render/Draft` は 160 × 90、`/Render/Review` は 960 × 540 で、どちらも `/Shot/StreetCam` を指します。本文の撮影まで行うと `street-draft.png` と `street-review.png` が USDA の隣にできます。
 
 ## ファイル一覧
 
-- [inspect_street.py](inspect_street.py) — 引数のステージの統計、合成エラー数、屋根色と属性の出典を表示する。
-- [make_faults.py](make_faults.py) — 新しいレイヤーで西の参照先と東の屋根色を上書きする。
-- [repair_street.py](repair_street.py) — `reference` または `tint` を指定して対応する上書きを取り除く。
+- [build_render.py](build_render.py) — 2つの `UsdRender.Settings` に解像度とカメラを記録する。

@@ -44,7 +44,7 @@ Invoke-Sample 010/check_street.py
 
 ## 期待される結果
 
-`work/exchange-work` に `street_rules.usdc` と `street.usdz` ができます。USDZ のルートは `/Street`、西の屋根は黄、東は緑で、どちらも `years=30` です。第11章には USDZ と別に、変換した USDC と依存レイヤーを渡します。
+`work/exchange-work` に `street_rules.usdc` と `street.usdz` ができます。USDZ のルートは `/Street`、西の屋根は黄、東は緑で、どちらも `years=30` です。第12章には USDZ と別に、変換した USDC と依存レイヤーを渡します。
 
 ## ファイル一覧
 

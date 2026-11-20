@@ -1,6 +1,6 @@
-# 第14章 コレクションとシーンの整理
+# 第14章 アセットを組み立てる ― モデル階層と Kind
 
-家、屋根、西区画の調査対象をコレクションにし、含まれる Prim を名前から取得します。
+通り・区画・家・屋根に Kind を付け、モデルの境界と親の Kind が判定に与える影響を確認します。
 
 ## 必要な環境
 
@@ -8,7 +8,7 @@ Windows の PowerShell と [共通環境](../README.md#共通環境)（uv、Pyth
 
 ## 事前準備
 
-`work/path-lab/receiver` に `street_models.usda` と `street-v2.usdz` が必要です。[第13章の手順](../013/README.md)で第2版の通りに Kind を設定してください。
+[第13章の手順](../013/README.md)で地区色を更新し、`work/path-lab/receiver/street-v2.usdz` を作ります。ここからは、その USDZ と同じフォルダにレイヤーを重ねます。
 
 ## 実行手順
 
@@ -24,15 +24,15 @@ Set-Location work/path-lab/receiver
 ```
 
 ```powershell
-Invoke-Sample 014/build_collections.py
-Invoke-Sample 014/inspect_collections.py
+Invoke-Sample 014/build_models.py
+Invoke-Sample 014/inspect_models.py
 ```
 
 ## 期待される結果
 
-`street_collections.usda` ができます。`houses` は東西の家、`roofs` は両方の `RoofFaces` を列挙します。`westSurvey` は西区画を展開し、`Looks` の枝を除外します。
+`street_models.usda` が USDZ の隣にできます。通りは `assembly`、区画は `group`、家は `component`、屋根は `subcomponent` です。`models` の一覧と個々の Prim の `model` 判定を比較できます。
 
 ## ファイル一覧
 
-- [build_collections.py](build_collections.py) — 3つのコレクションに対象・除外・展開規則を設定する。
-- [inspect_collections.py](inspect_collections.py) — 各コレクションの成員と調査対象の includes を表示する。
+- [build_models.py](build_models.py) — 受領した通りに Kind を設定したレイヤーを重ねる。
+- [inspect_models.py](inspect_models.py) — Kind の派生関係と階層内でのモデル判定を表示する。

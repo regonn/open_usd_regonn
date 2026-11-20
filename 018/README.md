@@ -1,16 +1,16 @@
-# 第18章 合成エラーとパフォーマンスの調べ方
+# 第18章 診断ツールでステージを読む
 
-循環する内部参照を修復し、通りを256区画に配置した場合のインスタンス化の効果を測ります。
+西の参照切れと東の意図しない屋根色を作り、合成エラーと属性の出典を手掛かりに順番に直します。
 
 ## 必要な環境
 
 Windows の PowerShell と [共通環境](../README.md#共通環境)（uv、Python 3.13 系、`usd-core` 26.11）を使います。
 
-本文の `usdchecker --skipVariants street_cycle.usda` で循環の修復前後を比較する場合は、別の PowerShell で conda-forge の `openusd` 26.08 環境を有効にします。環境の作り方は[第10章の必要な環境](../010/README.md#必要な環境)を参照してください。
+本文の `usdchecker --skipVariants` と `usdcat` で修復前後の状態を調べる場合は、別の PowerShell で conda-forge の `openusd` 26.08 環境を有効にします。環境の作り方は[第10章の必要な環境](../010/README.md#必要な環境)を参照してください。
 
 ## 事前準備
 
-[第17章の手順](../017/README.md)で `street_check.usda` の参照と色を両方修復します。`work/path-lab/receiver` に `street_render.usda` 以下のレイヤーと `street-v2.usdz` を残します。
+[第17章の手順](../017/README.md)で `work/path-lab/receiver/street_render.usda` を作ります。`street_lighting.usda` 以下のサブレイヤーと `street-v2.usdz` が読み込める状態で使います。撮影画像は不要です。
 
 ## 実行手順
 
@@ -25,22 +25,24 @@ function Invoke-Sample($file) { & $python (Join-Path $repo $file) @args }
 Set-Location work/path-lab/receiver
 ```
 
-循環を作った直後の警告が診断対象です。本文の CLI でも確かめるには、`create` と `repair` の直後にそれぞれ `usdchecker --skipVariants street_cycle.usda` を実行してください。
+本文の CLI 診断も行う場合は、各 `inspect_street.py` の直後に、同じファイルに対して `usdchecker --skipVariants` を実行してください。参照の修復直後には、東の屋根色の上書きがまだ残っています。
 
 ```powershell
-Invoke-Sample 018/cycle.py create
-Invoke-Sample 018/cycle.py repair
-Invoke-Sample 018/build_blocks.py
-Invoke-Sample 018/measure_stage.py blocks_plain.usda
-Invoke-Sample 018/measure_stage.py blocks_shared.usda
+Invoke-Sample 018/inspect_street.py street_render.usda
+Invoke-Sample 018/make_faults.py
+Invoke-Sample 018/inspect_street.py street_check.usda
+Invoke-Sample 018/repair_street.py reference
+Invoke-Sample 018/inspect_street.py street_check.usda
+Invoke-Sample 018/repair_street.py tint
+Invoke-Sample 018/inspect_street.py street_check.usda
 ```
 
 ## 期待される結果
 
-`street_cycle.usda` の修復後は `composition errors: 0` で `/PlanA/House` が Mesh になります。`blocks_plain.usda` と `blocks_shared.usda` の `primary prims`、`instances`、`open_ms` を比較できます。所要時間は環境によって変わります。
+`street_check.usda` ができます。故障時は西の家を Mesh として取得できず、東の色は緑になります。両方を修復すると `composition errors: 0`、西は Mesh、東の色は第13章の紫に戻ります。
 
 ## ファイル一覧
 
-- [cycle.py](cycle.py) — `create` で循環を作り、`repair` で戻り先を変更して再診断する。
-- [build_blocks.py](build_blocks.py) — 通常参照とインスタンス化を使い、2種類の256区画を生成する。
-- [measure_stage.py](measure_stage.py) — 指定したステージの起動時間、Prim・インスタンス・レイヤーの数を表示する。
+- [inspect_street.py](inspect_street.py) — 引数のステージの統計、合成エラー数、屋根色と属性の出典を表示する。
+- [make_faults.py](make_faults.py) — 新しいレイヤーで西の参照先と東の屋根色を上書きする。
+- [repair_street.py](repair_street.py) — `reference` または `tint` を指定して対応する上書きを取り除く。

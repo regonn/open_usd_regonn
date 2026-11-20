@@ -1,14 +1,16 @@
-# 第19章 Python によるバッチ処理と自動化
+# 第19章 合成エラーとパフォーマンスの調べ方
 
-4つのステージに同じ検査を適用し、不合格を CSV で特定してから、合格した一式を USDC に変換します。
+循環する内部参照を修復し、通りを256区画に配置した場合のインスタンス化の効果を測ります。
 
 ## 必要な環境
 
 Windows の PowerShell と [共通環境](../README.md#共通環境)（uv、Python 3.13 系、`usd-core` 26.11）を使います。
 
+本文の `usdchecker --skipVariants street_cycle.usda` で循環の修復前後を比較する場合は、別の PowerShell で conda-forge の `openusd` 26.08 環境を有効にします。環境の作り方は[第10章の必要な環境](../010/README.md#必要な環境)を参照してください。
+
 ## 事前準備
 
-[第18章の手順](../018/README.md)を終え、`work/path-lab/receiver` に `street_check.usda`（修復済み）、`street_cycle.usda`、`blocks_plain.usda`、`blocks_shared.usda` と依存レイヤー、`street-v2.usdz` をそろえます。新しい `batch-19` のコピーにだけ循環を再現します。
+[第18章の手順](../018/README.md)で `street_check.usda` の参照と色を両方修復します。`work/path-lab/receiver` に `street_render.usda` 以下のレイヤーと `street-v2.usdz` を残します。
 
 ## 実行手順
 
@@ -23,23 +25,22 @@ function Invoke-Sample($file) { & $python (Join-Path $repo $file) @args }
 Set-Location work/path-lab/receiver
 ```
 
+循環を作った直後の警告が診断対象です。本文の CLI でも確かめるには、`create` と `repair` の直後にそれぞれ `usdchecker --skipVariants street_cycle.usda` を実行してください。
+
 ```powershell
-New-Item -ItemType Directory batch-19
-Copy-Item *.usda,street-v2.usdz -Destination batch-19
-Set-Location batch-19
-$roots = 'street_check.usda','street_cycle.usda','blocks_plain.usda','blocks_shared.usda'
-Invoke-Sample 018/cycle.py create
-Invoke-Sample 019/batch_street.py --export @roots
-# 1回目は循環参照で1件が FAIL になる。結果を残してから修復する。
-Copy-Item report.csv report-before.csv
-Invoke-Sample 018/cycle.py repair
-Invoke-Sample 019/batch_street.py --export @roots
+Invoke-Sample 019/cycle.py create
+Invoke-Sample 019/cycle.py repair
+Invoke-Sample 019/build_blocks.py
+Invoke-Sample 019/measure_stage.py blocks_plain.usda
+Invoke-Sample 019/measure_stage.py blocks_shared.usda
 ```
 
 ## 期待される結果
 
-1回目は `PASS=3 FAIL=1`（終了コード 1）で、修復前の記録を `report-before.csv` に残します。修復後は `PASS=4 FAIL=0` となり、`batch-19` に `report.csv` と4つの `*.review.usdc` ができます。
+`street_cycle.usda` の修復後は `composition errors: 0` で `/PlanA/House` が Mesh になります。`blocks_plain.usda` と `blocks_shared.usda` の `primary prims`、`instances`、`open_ms` を比較できます。所要時間は環境によって変わります。
 
 ## ファイル一覧
 
-- [batch_street.py](batch_street.py) — 指定された全ステージを検査し、CSV に集計する。`--export` は全件合格したときにルートレイヤーを変換する。
+- [cycle.py](cycle.py) — `create` で循環を作り、`repair` で戻り先を変更して再診断する。
+- [build_blocks.py](build_blocks.py) — 通常参照とインスタンス化を使い、2種類の256区画を生成する。
+- [measure_stage.py](measure_stage.py) — 指定したステージの起動時間、Prim・インスタンス・レイヤーの数を表示する。

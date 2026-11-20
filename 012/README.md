@@ -1,16 +1,14 @@
-# 第12章 USDZ パッケージと配布
+# 第12章 アセット解決とパス管理（Ar リゾルバ）
 
-修復済みの通りを梱包し、配布先で形状の読み込み元と屋根色を確認してから、第2版を届けます。
+通りを別の場所に移し、家が見つからなくなる条件と、パスを書き換える位置を確認します。
 
 ## 必要な環境
 
 Windows の PowerShell と [共通環境](../README.md#共通環境)（uv、Python 3.13 系、`usd-core` 26.11）を使います。
 
-本文の `usdzip -a`・`usdzip -l` で梱包・一覧を確認し、`usdchecker` で受け取り後の USDZ を検査する場合は、別の PowerShell で conda-forge の `openusd` 26.08 環境を有効にします。環境の作り方は[第10章の必要な環境](../010/README.md#必要な環境)を参照してください。
-
 ## 事前準備
 
-[第11章の手順](../011/README.md)の最後まで進め、`work/path-lab/scene/street_rules.usdc` が `geometry/house.usda` を解決できる状態にします。`scene` 全体を新しい `release-src` にコピーし、配布物は隣の `receiver` に置きます。
+[第10章の手順](../010/README.md)で `work/exchange-work` の `street_rules.usdc` と7枚の依存 USDA を準備します。以下の `$files` がコピーする8枚の一覧です。`work/path-lab` は新しい作業場所として使います。
 
 ## 実行手順
 
@@ -22,32 +20,31 @@ Set-Location $repo
 uv sync --locked
 $python = Join-Path $repo '.venv/Scripts/python.exe'
 function Invoke-Sample($file) { & $python (Join-Path $repo $file) @args }
-Set-Location work/path-lab
+Set-Location work
 ```
 
-以下では Python API で USDZ を受け手の `receiver` に直接書き出します。`update_tile.py` は `release-src` 側の色を変えるので、初版を作った後に実行します。
+`house.usda` は `path-lab/scene` のコピーだけを移動します。移動直後の読み込み警告を確認してから、検索パスの比較と修復に進んでください。
 
 ```powershell
-function New-UsdPackage($source, $destination) {
-    & $python -c "import sys; from pxr import UsdUtils; sys.exit(0 if UsdUtils.CreateNewUsdzPackage(sys.argv[1], sys.argv[2]) else 1)" $source $destination
-    if ($LASTEXITCODE -ne 0) { throw "USDZ の作成に失敗しました: $destination" }
-}
-
-Copy-Item scene release-src -Recurse
-New-Item -ItemType Directory receiver
-New-UsdPackage release-src/street_rules.usdc receiver/street-v1.usdz
-Invoke-Sample 012/inspect_delivery.py receiver/street-v1.usdz
-Invoke-Sample 012/update_tile.py
-New-UsdPackage release-src/street_rules.usdc receiver/street-v2.usdz
-Set-Location receiver
-Invoke-Sample 012/inspect_delivery.py street-v2.usdz
+New-Item -ItemType Directory path-lab/scene
+$files = 'street_rules.usdc','street_choices.usda','street.usda','house_choices.usda','assembly.usda','house.usda','look.usda','paint.usda'
+foreach ($file in $files) { Copy-Item (Join-Path exchange-work $file) path-lab/scene }
+Set-Location path-lab
+Invoke-Sample 012/inspect_paths.py
+New-Item -ItemType Directory scene/geometry
+Move-Item scene/house.usda scene/geometry/house.usda
+Invoke-Sample 012/inspect_paths.py
+Invoke-Sample 012/search_paths.py
+Invoke-Sample 012/fix_path.py
+Invoke-Sample 012/inspect_paths.py
 ```
 
 ## 期待される結果
 
-`work/path-lab/receiver` に `street-v1.usdz` と `street-v2.usdz` ができます。`stored`、`unencrypted`、`aligned` はすべて `True`。形状の出典はどちらもパッケージ内の `geometry/house.usda` で、第2版の東の屋根色は `(0.42, 0.08, 0.56)` です。
+移動直後は `resolved: (missing)` となり、面が読めません。修復後は `resolved: scene/geometry/house.usda` と表示され、東西とも `[4, 3]` に戻ります。第13章の入力は、この修復済みの `scene` 一式です。
 
 ## ファイル一覧
 
-- [inspect_delivery.py](inspect_delivery.py) — 指定した USDZ の格納条件、形状の出典、屋根色を調べる。
-- [update_tile.py](update_tile.py) — 配布元コピーの地区色を第2版の紫に変更する。
+- [inspect_paths.py](inspect_paths.py) — 記録されたパスと解決先、通りから読める面を表示する。
+- [search_paths.py](search_paths.py) — 検索パスを指定し、`./house.usda` と `house.usda` の解決結果を比較する。
+- [fix_path.py](fix_path.py) — `scene/assembly.usda` の形状レイヤーのパスを修復する。

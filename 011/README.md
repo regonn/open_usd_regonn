@@ -1,18 +1,18 @@
-# 第11章 アセット解決とパス管理（Ar リゾルバ）
+# 第11章 インポーター／エクスポーターとツール連携
 
-通りを別の場所に移し、家が見つからなくなる条件と、パスを書き換える位置を確認します。
+同じ Alembic ファイルを使い、環境に登録されたファイル形式と、実際に開ける形式を照合します。
 
 ## 必要な環境
 
-Windows の PowerShell と [共通環境](../README.md#共通環境)（uv、Python 3.13 系、`usd-core` 26.11）を使います。
+Windows の PowerShell と [共通環境](../README.md#共通環境)（uv、Python 3.13 系、`usd-core` 26.11）を使います。読み込みに成功する例は、[序章の Kit Base Editor](../000/README.md)（Kit 110.4.1）で確認できます。
 
 ## 事前準備
 
-[第10章の手順](../010/README.md)で `work/exchange-work` の `street_rules.usdc` と7枚の依存 USDA を準備します。以下の `$files` がコピーする8枚の一覧です。`work/path-lab` は新しい作業場所として使います。
+2軒の家を収めた `houses.abc` を同梱しています。この章から始める場合も、そのファイルだけで形式判定を試せます。本文の追加例で通り全体を Alembic に書き出す場合は、[第7章の手順](../007/README.md)で `street.usda` と依存レイヤーをそろえ、usdAbc を利用できる `usdcat` を使ってください。
 
 ## 実行手順
 
-クローンしたリポジトリのルートか `011` フォルダで PowerShell を開きます。以下のブロックは同じウィンドウで順に実行してください。
+クローンしたリポジトリのルートか `011` フォルダで PowerShell を開きます。
 
 ```powershell
 $repo = (git rev-parse --show-toplevel)
@@ -20,31 +20,31 @@ Set-Location $repo
 uv sync --locked
 $python = Join-Path $repo '.venv/Scripts/python.exe'
 function Invoke-Sample($file) { & $python (Join-Path $repo $file) @args }
-Set-Location work
+New-Item -ItemType Directory -Force work/formats | Out-Null
+Copy-Item 011/houses.abc work/formats/
+Set-Location work/formats
+Invoke-Sample 011/formats.py
+Invoke-Sample 011/open_cache.py
 ```
 
-`house.usda` は `path-lab/scene` のコピーだけを移動します。移動直後の読み込み警告を確認してから、検索パスの比較と修復に進んでください。
+Kit でも試す場合は、Script Editor で次を実行します。パスは手元の `houses.abc` の絶対パスに置き換えてください。
 
-```powershell
-New-Item -ItemType Directory path-lab/scene
-$files = 'street_rules.usdc','street_choices.usda','street.usda','house_choices.usda','assembly.usda','house.usda','look.usda','paint.usda'
-foreach ($file in $files) { Copy-Item (Join-Path exchange-work $file) path-lab/scene }
-Set-Location path-lab
-Invoke-Sample 011/inspect_paths.py
-New-Item -ItemType Directory scene/geometry
-Move-Item scene/house.usda scene/geometry/house.usda
-Invoke-Sample 011/inspect_paths.py
-Invoke-Sample 011/search_paths.py
-Invoke-Sample 011/fix_path.py
-Invoke-Sample 011/inspect_paths.py
+```python
+from pxr import Usd, UsdGeom
+
+stage = Usd.Stage.Open(r"C:\path\to\open_usd_regonn\011\houses.abc")
+for prim in stage.Traverse():
+    if prim.IsA(UsdGeom.Mesh):
+        print(prim.GetPath())
 ```
 
 ## 期待される結果
 
-移動直後は `resolved: (missing)` となり、面が読めません。修復後は `resolved: scene/geometry/house.usda` と表示され、東西とも `[4, 3]` に戻ります。第12章の入力は、この修復済みの `scene` 一式です。
+- 単体 Python では `['usd', 'usda', 'usdc', 'usdz']` が表示され、`abc` と `gltf` の検索結果は `None` です。レイヤーと Stage の読み込みはどちらも例外になり、スクリプトが `Cannot determine file format` を表示します。
+- Kit では同じファイルから `/Street/West` と `/Street/East` が読めます。各 Mesh は四角い壁と三角の屋根を持ちます。
 
 ## ファイル一覧
 
-- [inspect_paths.py](inspect_paths.py) — 記録されたパスと解決先、通りから読める面を表示する。
-- [search_paths.py](search_paths.py) — 検索パスを指定し、`./house.usda` と `house.usda` の解決結果を比較する。
-- [fix_path.py](fix_path.py) — `scene/assembly.usda` の形状レイヤーのパスを修復する。
+- [formats.py](formats.py) — 登録された拡張子と形式ごとの検索結果を表示する。
+- [open_cache.py](open_cache.py) — 作業フォルダの Alembic をレイヤーと Stage として開き、両方の結果を表示する。
+- [houses.abc](houses.abc) — 本書用に作成した2軒の家の形状。Kit 同梱 USD で書き出した Ogawa 形式の Alembic。
