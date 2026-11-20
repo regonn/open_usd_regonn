@@ -1,0 +1,17 @@
+#usda 1.0
+(
+    defaultPrim = "House"
+    upAxis = "Y"
+    metersPerUnit = 1
+)
+
+def Mesh "House"
+{
+    int[] faceVertexCounts = [4, 3]
+    int[] faceVertexIndices = [0, 1, 2, 3, 3, 2, 4]
+    point3f[] points = [(-1, 0, 0), (1, 0, 0), (1, 2, 0), (-1, 2, 0), (0, 3, 0)]
+    color3f[] primvars:displayColor = [(0.8, 0.65, 0.42), (0.04, 0.36, 0.12)] (
+        interpolation = "uniform"
+    )
+    uniform token subdivisionScheme = "none"
+}

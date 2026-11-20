@@ -1,0 +1,18 @@
+#usda 1.0
+(
+    defaultPrim = "Street"
+    upAxis = "Y"
+    metersPerUnit = 1
+)
+
+def Xform "Street"
+{
+    def Xform "West"
+    {
+        def "House" (
+            prepend references = @./house-v1.usda@
+        )
+        {
+        }
+    }
+}
